@@ -93,55 +93,42 @@ def check_response(position):
         Il a deviné et trouvé "{prompts}". Est-ce acceptable comme réponse ?
  
         Instructions:
-        - "{prompts}" doit être très proche de "{sujet}" et complet pour un succès. 
+        - "{prompts}" doit être très proche de "{sujet}" et complet pour un succès.
         - Si c'est le cas, félicite-le, précise lui la vraie réponse et annonce qu'il le prochain sujet sans donner de précision à propos.
-        - Si non, donne-lui le bon résultat et encourage-le à suivre l'actualité.
+        - Si non, juge sa réponse sur un ton ironnique et  donne-lui le bon résultat et demandes lui de suivre plus souvent l'actualité sur un ton irronique.
         - Rends le jeu amusant et engageant. Evite de répéter la meme chose à l'utilisateur et varie tes réponses.
  
             """),
-            ("user", "{sujet}")
+            ("user", "{prompts}")
         ]
     )
     prompt_check = response_check.invoke({"prompts": prompts,"sujet": sujet})
     response = model.invoke(prompt_check)
     return {"role": "assistant", "content": response.content}
-for i in range(0,5):
-    if 'count' not in st.session_state:
-        st.session_state['count'] = 0
-    
-    # Initialize chat history
-    if "messages" not in st.session_state:
-        st.session_state.messages = [
-            get_hint(i)
-        ]
-    
-    # Display chat messages from history on app rerun
+ 
+if 'count' not in st.session_state:
+    st.session_state['count'] = 0
+ 
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        get_hint(1)
+    ]
+ 
+# Display chat messages from history on app rerun
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+ 
+# Accept user input
+if prompts := st.chat_input("C'est ton tour"):
+    # Display user message in chat message container
+    with st.chat_message("user"):
+        st.markdown(prompts)
+    st.session_state.messages.append({"role": "user", "content": prompts})
+    st.session_state.messages = [
+        check_response(1)
+    ]
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-    
-    # Accept user input
-    if prompts := st.chat_input("C'est ton tour"):
-        # Display user message in chat message container
-        with st.chat_message("user"):
-            st.markdown(prompts)
-        st.session_state.messages.append({"role": "user", "content": prompts})
-        st.session_state.messages = [
-            check_response(i)
-        ]
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
-    
-
-
- 
- 
- 
- 
-   
- 
-# Display assistant response in chat message container
-# prompts = reponse du bot qui sera envoyé to Gemini
-# Add assistant response to chat history
-#st.session_state.messages.append({"role": "assistant", "content": responses})
